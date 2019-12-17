@@ -1,5 +1,6 @@
 package zxing;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -13,23 +14,30 @@ import com.google.zxing.qrcode.QRCodeWriter;
 public class QRCodeGenerator {
 
 	private static final String QR_CODE_IMAGE_PATH ="./MyQRCode.png";
+	private String texto;
 	
-	private static void generateQRCodeImage(String text, int width, int height,String filePath) throws WriterException ,IOException {
+	public QRCodeGenerator(String texto) {
+		this.texto = texto;
+	}
+	
+	public byte[] QRToByte() throws IOException, WriterException {
+		return getQRCodeImage(this.texto, 350, 350);
+	}
+	
+	private byte[] getQRCodeImage(String text, int width, int height) throws WriterException, IOException {
+		QRCodeWriter qrCodeWriter = new QRCodeWriter();
+		BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
+		
+		ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+		MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+		byte[] pngData = pngOutputStream.toByteArray();
+		return pngData;
+	}
+	private void generateQRCodeImage(String text, int width, int height,String filePath) throws WriterException ,IOException {
 		QRCodeWriter qrCodeWriter = new QRCodeWriter();
 		BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
 		
 		Path path = FileSystems.getDefault().getPath (filePath);
 		MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
 	}
-	
-	public static void main(String[] args) {
-		try {
-			generateQRCodeImage("Primer intento QRCode", 350, 350, QR_CODE_IMAGE_PATH);
-		}catch(WriterException e) {
-			System.out.println("Error");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
 }
